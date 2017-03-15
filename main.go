@@ -5,8 +5,8 @@ package main
 import (
 	"net/http"
 
-	"github.com/gorilla/websocket"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 	"log"
 )
 
@@ -20,19 +20,18 @@ var (
 
 	upgrader = websocket.Upgrader{}
 
-	clients[] *Client
+	clients []*Client
 )
 
 func (c Client) writePump() {
 	for {
 		select {
-		case msg := <- c.send:
+		case msg := <-c.send:
 			c.conn.WriteMessage(websocket.TextMessage, msg)
 			log.Printf("[%s][send] OK", c.conn.RemoteAddr())
 		}
 	}
 }
-
 
 func wsServe(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
