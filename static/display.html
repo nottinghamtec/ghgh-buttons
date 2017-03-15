@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GHGH Judges Controls</title>
+</head>
+<body>
+
+<h1 id="status">Offline</h1>
+
+
+<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
+<script>
+    function openConnection() {
+        var conn = new WebSocket("ws://" + document.location.host + "/ws/display");
+
+        conn.onopen = function() {
+            $('#status').text("Open");
+        };
+        conn.onclose = function() {
+            $('#status').text("Closed");
+        };
+
+        return conn;
+    }
+
+    $(document).ready(function() {
+        var conn = openConnection();
+
+        conn.onmessage = function(e) {
+            var data = JSON.parse(e.data);
+
+            switch(data['type']) {
+                default:
+                    console.log("Unknown message " + e.data);
+                    break;
+            }
+        };
+
+        $('.trigger').on('click', function(e) {
+            e.preventDefault();
+
+            var id = $(this).data('id');
+
+            var msg = JSON.stringify({
+                type: 'cmd',
+                value: id
+            });
+
+            conn.send(msg);
+        });
+    });
+</script>
+</body>
+</html>

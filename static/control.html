@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GHGH Judges Controls</title>
+</head>
+<body>
+
+<h1 id="status">Offline</h1>
+
+<table>
+    <tr>
+        <td><button class="trigger" data-id="t1">Team 1</button></td>
+        <td><button class="trigger" data-id="t2">Team 2</button></td>
+    </tr>
+</table>
+
+<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
+<script>
+    function openConnection() {
+        var conn = new WebSocket("ws://" + document.location.host + "/ws/control");
+
+        conn.onopen = function() {
+            $('#status').text("Open");
+        };
+        conn.onclose = function() {
+            $('#status').text("Closed");
+        };
+
+        return conn;
+    }
+
+    $(document).ready(function() {
+        var conn = openConnection();
+
+        conn.onmessage = function(e) {
+            var data = JSON.parse(e.data);
+
+            switch(data['type']) {
+
+                case "ack":
+                    value = data['value'];
+                    console.log('Received' + value);
+                    break;
+
+                default:
+                    console.log("Unknown message " + data)
+            }
+        };
+
+        $('.trigger').on('click', function(e) {
+            e.preventDefault();
+
+            var id = $(this).data('id');
+
+            var msg = JSON.stringify({
+                type: 'cmd',
+                value: id
+            });
+
+            conn.send(msg);
+        });
+    });
+</script>
+</body>
+</html>
