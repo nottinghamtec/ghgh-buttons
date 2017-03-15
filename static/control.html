@@ -53,6 +53,7 @@
                             $('body').removeClass();
                             data['type'] = 'ack';
                             conn.send(JSON.stringify(data));
+                            $('.trigger').prop('disabled', false);
                             break;
 
                         default:
@@ -81,6 +82,8 @@
             });
 
             conn.send(msg);
+
+            $('.trigger').prop('disabled', true);
         });
     });
 </script>
