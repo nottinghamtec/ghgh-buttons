@@ -17,6 +17,7 @@
 
 <h1 id="status">Offline</h1>
 
+<button id="reset">Reset</button>
 
 <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
 <script>
@@ -43,7 +44,23 @@
                 case 'cmd':
                     var val = data['value'];
                     $('body').removeClass().addClass(val);
+                    data['type'] = 'ack';
+                    conn.send(JSON.stringify(data));
                     break;
+
+                case 'ack':
+                    var val = data['value'];
+                    switch (val) {
+                        case "reset":
+                            $('body').removeClass();
+                            data['type'] = 'ack';
+                            break;
+
+                        default:
+                            console.log("Unknown ack: " + val);
+                    }
+                    break;
+
 
                 default:
                     console.log("Unknown message " + e.data);
@@ -51,18 +68,10 @@
             }
         };
 
-        $('.trigger').on('click', function(e) {
+        $('#reset').on('click', function(e) {
             e.preventDefault();
-
-            var id = $(this).data('id');
-
-            var msg = JSON.stringify({
-                type: 'cmd',
-                value: id
-            });
-
-            conn.send(msg);
-        });
+            conn.send(JSON.stringify({type:'cmd', value:'reset'}));
+        })
     });
 </script>
 </body>

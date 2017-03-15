@@ -3,6 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>GHGH Judges Controls</title>
+
+    <style>
+        body.t1 {
+            background-color: #ff9900;
+        }
+        body.t2 {
+            background-color: #0000ff;
+        }
+    </style>
 </head>
 <body>
 
@@ -37,10 +46,23 @@
             var data = JSON.parse(e.data);
 
             switch(data['type']) {
+                case "cmd":
+                    var val = data['value'];
+                    switch (val) {
+                        case "reset":
+                            $('body').removeClass();
+                            data['type'] = 'ack';
+                            conn.send(JSON.stringify(data));
+                            break;
+
+                        default:
+                            console.log("Unknown command: " + val);
+                    }
+                    break;
 
                 case "ack":
-                    value = data['value'];
-                    console.log('Received' + value);
+                    var val = data['value'];
+                    $('body').removeClass().addClass(val);
                     break;
 
                 default:
