@@ -14,12 +14,22 @@
 <h4 class="grey-darken-2">Connection status: <span class="red" id="status">Offline</span></h4>
 <h1 class="title grey">GHGH Judge's Display</h1>
 
+    <table>
+        <tr>
+            <td id="control1">&nbsp;</td>
+            <td id="control2">&nbsp;</td>
+            <td id="control3">&nbsp;</td>
+        </tr>
+    </table>
+
 <button class="btn dark-grey-bk grey-lighten-2" id="reset">Reset</button>
 
 </div>
 
 <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
 <script>
+    var conn;
+
     function openConnection() {
         var conn = new WebSocket("ws://" + document.location.host + "/ws/display");
 
@@ -33,8 +43,18 @@
         return conn;
     }
 
+    function sendMessage(dest, type, value) {
+        var msg = {
+            src: "display",
+            dest: dest,
+            type: type,
+            value: value
+        };
+        conn.send(JSON.stringify(msg));
+    }
+
     $(document).ready(function() {
-        var conn = openConnection();
+        conn = openConnection();
         $('#reset').prop('disabled', true)
 
         conn.onmessage = function(e) {
@@ -43,17 +63,17 @@
             switch(data['type']) {
                 case 'cmd':
                     var val = data['value'];
-                    $('body').removeClass().addClass(val);
-                    $('#reset').prop('disabled', false)
+                    $('#' + data['src']).removeClass().addClass(val);
+                    $('#reset').prop('disabled', false);
                     data['type'] = 'ack';
-                    conn.send(JSON.stringify(data));
+                    sendMessage(data['src'], 'ack', val);
                     break;
 
                 case 'ack':
                     var val = data['value'];
                     switch (val) {
                         case "reset":
-                            $('body').removeClass();
+                            $('#' + data['src']).removeClass();
                             data['type'] = 'ack';
                             break;
 
@@ -71,7 +91,7 @@
 
         $('#reset').on('click', function(e) {
             e.preventDefault();
-            conn.send(JSON.stringify({type:'cmd', value:'reset'}));
+            sendMessage("", "cmd", "reset");
             $('#reset').prop('disabled', true)
         })
     });

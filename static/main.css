@@ -22,11 +22,11 @@ body {
 }
 
 /*Orange*/
-body.t1 {
+td.t1 {
     background-color: #ffa726;
 }
 /*Blue*/
-body.t2 {
+td.t2 {
     background-color: #4fc3f7;
 }
 

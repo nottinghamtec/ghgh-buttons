@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport'/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
     <title>GHGH Judges Controls</title>
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="colour.css">
@@ -11,81 +11,104 @@
 <body>
 <div class="container -full-height">
 
-<h4 class="grey-darken-2">Connection status: <span class="red" id="status">Offline</span></h4>
+    <h4 class="grey-darken-2">Connection status: <span class="red" id="status">Offline</span></h4>
+    <select id="name">
+        <option value="control1">1</option>
+        <option value="control2">2</option>
+        <option value="control3">3</option>
+    </select>
 
-<h1 class="title grey">GHGH Judge's Controls</h1>
+    <button id="connect">Connect</button>
 
-<table class="button-table">
-    <tr>
-        <td><button class="trigger btn left orange-bk grey" data-id="t1">Orange Wins</button></td>
-        <td><button class="trigger btn right blue-bk grey" data-id="t2">Blue Wins</button></td>
-    </tr>
-</table>
+    <h1 class="title grey">GHGH Judge's Controls</h1>
+
+    <table class="button-table">
+        <tr>
+            <td>
+                <button class="trigger btn left orange-bk grey" data-id="t1">Orange Wins</button>
+            </td>
+            <td>
+                <button class="trigger btn right blue-bk grey" data-id="t2">Blue Wins</button>
+            </td>
+        </tr>
+    </table>
 
 </div>
 
 <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
 <script>
+    var conn, name;
     function openConnection() {
-        var conn = new WebSocket("ws://" + document.location.host + "/ws/control");
+        var conn = new WebSocket("ws://" + document.location.host + "/ws/" + name);
 
-        conn.onopen = function() {
+        conn.onopen = function () {
             $('#status').text("Online").removeClass().addClass("green");
         };
-        conn.onclose = function() {
+        conn.onclose = function () {
             $('#status').text("Offline").removeClass().addClass("red");
         };
 
         return conn;
     }
 
-    $(document).ready(function() {
-        var conn = openConnection();
-
-        conn.onmessage = function(e) {
-            var data = JSON.parse(e.data);
-
-            switch(data['type']) {
-                case "cmd":
-                    var val = data['value'];
-                    switch (val) {
-                        case "reset":
-                            $('body').removeClass();
-                            data['type'] = 'ack';
-                            conn.send(JSON.stringify(data));
-                            $('.trigger').prop('disabled', false);
-                            break;
-
-                        default:
-                            console.log("Unknown command: " + val);
-                    }
-                    break;
-
-                case "ack":
-                    var val = data['value'];
-                    $('body').removeClass().addClass(val);
-                    break;
-
-                default:
-                    console.log("Unknown message " + data)
-            }
+    function sendMessage(type, value) {
+        var msg = {
+            src: name,
+            dest: "display",
+            type: type,
+            value: value
         };
+        conn.send(JSON.stringify(msg));
+    }
 
-        $('.trigger').on('click', function(e) {
+    $(document).ready(function () {
+        $('#connect').click(function (e) {
+            e.preventDefault();
+            conn = openConnection();
+
+            conn.onmessage = function (e) {
+                var data = JSON.parse(e.data);
+
+                switch (data['type']) {
+                    case "cmd":
+                        var val = data['value'];
+                        switch (val) {
+                            case "reset":
+                                $('body').removeClass();
+                                $('.trigger').prop('disabled', false);
+                                sendMessage('ack', 'reset');
+                                break;
+
+                            default:
+                                console.log("Unknown command: " + val);
+                        }
+                        break;
+
+                    case "ack":
+                        var val = data['value'];
+                        $('body').removeClass().addClass(val);
+                        $('.trigger').prop('disabled', true);
+                        break;
+
+                    default:
+                        console.log("Unknown message " + data)
+                }
+            };
+        });
+
+        $('.trigger').on('click', function (e) {
             e.preventDefault();
 
             var id = $(this).data('id');
 
-            var msg = JSON.stringify({
-                type: 'cmd',
-                value: id
-            });
-
-            conn.send(msg);
-
-            $('.trigger').prop('disabled', true);
+            sendMessage('cmd', id);
         });
-    });
+
+        $('#name').on("change", function () {
+            name = $(this).val();
+        }).change();
+    })
+    ;
 </script>
 </body>
 </html>

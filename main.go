@@ -10,25 +10,36 @@ import (
 	"log"
 )
 
+type Message struct {
+	Src      string `json:"src"`
+	Dest     string `json:"dest"`
+	MsgType  string `json:"type"`
+	MsgValue string `json:"value"`
+}
+
 type Client struct {
+	name string
 	conn *websocket.Conn
-	send chan []byte
+	send chan Message
 }
 
 var (
 	port = ":8000"
 
-	upgrader = websocket.Upgrader{}
+	upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
 
-	clients []*Client
+	clients = map[string]*Client{}
 )
 
 func (c Client) writePump() {
 	for {
 		select {
 		case msg := <-c.send:
-			c.conn.WriteMessage(websocket.TextMessage, msg)
-			log.Printf("[%s][send] OK", c.conn.RemoteAddr())
+			c.conn.WriteJSON(msg)
+			log.Printf("[%s][%s][send] OK", msg.Src, msg.Dest)
 		}
 	}
 }
@@ -47,13 +58,14 @@ func wsServe(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Connecting client", name)
 
-	client := &Client{conn, make(chan []byte)}
-	clients = append(clients, client)
+	client := &Client{name, conn, make(chan Message)}
+	clients[name] = client
 
 	go client.writePump()
 
 	for {
-		mt, msg, err := conn.ReadMessage()
+		jsonMsg := Message{}
+		err := conn.ReadJSON(&jsonMsg)
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
 				log.Printf("error: %v", err)
@@ -61,16 +73,24 @@ func wsServe(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		if mt != websocket.TextMessage {
-			log.Printf("[%s][warn] Unkown message type", conn.RemoteAddr())
-			continue
+		if jsonMsg.Src == "" {
+			jsonMsg.Src = name
 		}
 
-		log.Printf("[%s][read] %s", conn.RemoteAddr(), msg)
-		for _, c := range clients {
-			if c != client {
-				c.send <- msg
+		log.Printf("[%s][%s][read] %s: %s", jsonMsg.Src, jsonMsg.Dest, jsonMsg.MsgType, jsonMsg.MsgValue)
+
+		if jsonMsg.Dest == "" {
+			for _, c := range clients {
+				if c.name != jsonMsg.Src {
+					jsonMsg.Dest = c.name
+					c.send <- jsonMsg
+				}
 			}
+		}
+
+		dest := clients[jsonMsg.Dest]
+		if dest != nil {
+			clients[jsonMsg.Dest].send <- jsonMsg
 		}
 	}
 }
