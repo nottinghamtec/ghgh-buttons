@@ -2,27 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
     <title>GHGH Judges Controls</title>
-
-    <style>
-        body.t1 {
-            background-color: #ff9900;
-        }
-        body.t2 {
-            background-color: #0000ff;
-        }
-    </style>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="colour.css">
 </head>
 <body>
+<div class="container -full-height">
 
-<h1 id="status">Offline</h1>
+<h4 class="grey-darken-2">Connection status: <span class="red" id="status">Offline</span></h4>
 
-<table>
+<h1 class="title grey">GHGH Judge's Controls</h1>
+
+<table class="button-table">
     <tr>
-        <td><button class="trigger" data-id="t1">Team 1</button></td>
-        <td><button class="trigger" data-id="t2">Team 2</button></td>
+        <td><button class="trigger btn left orange-bk grey" data-id="t1">Orange Wins</button></td>
+        <td><button class="trigger btn right blue-bk grey" data-id="t2">Blue Wins</button></td>
     </tr>
 </table>
+
+</div>
 
 <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
 <script>
@@ -30,10 +29,10 @@
         var conn = new WebSocket("ws://" + document.location.host + "/ws/control");
 
         conn.onopen = function() {
-            $('#status').text("Open");
+            $('#status').text("Online").removeClass().addClass("green");
         };
         conn.onclose = function() {
-            $('#status').text("Closed");
+            $('#status').text("Offline").removeClass().addClass("red");
         };
 
         return conn;
