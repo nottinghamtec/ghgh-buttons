@@ -1,0 +1,79 @@
+body {
+  min-height: 100vh;
+  margin: 0;
+  background-color: #e0e0e0;
+}
+
+.container {
+  margin: 0 auto;
+  max-width: 1280px;
+  width: 90%;
+  position: relative;
+}
+
+.title {
+  text-align: center;
+  margin-top: 10%;
+  font-size: 4em;
+}
+
+.-full-height {
+  height: 100vh;
+}
+
+/*Orange*/
+body.t1 {
+    background-color: #ffa726;
+}
+/*Blue*/
+body.t2 {
+    background-color: #4fc3f7;
+}
+
+.button-table {
+  position: absolute;
+  height: 50%;
+  width: 100%;
+  /*margin: 30% 1% 0;*/
+  bottom: 10%;
+}
+
+.button-table > tbody > tr {
+  height: 100%;
+}
+
+.button-table > tbody > tr > td {
+  width: 50%
+}
+
+.trigger {
+  width: 95%;
+  height: 100%;
+}
+
+.btn {
+  border: 0;
+  border-radius: 5px;
+  font-size: 4em;
+}
+
+.btn:disabled {
+  background-color: #bdbdbd;
+}
+
+#reset {
+  width: 100%;
+  height: 20%;
+  position: absolute;
+  bottom: 10%;
+  font-size: 4em;
+}
+
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
+}
+
