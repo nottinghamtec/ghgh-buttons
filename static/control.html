@@ -64,6 +64,9 @@
     $(document).ready(function () {
         $('#connect').click(function (e) {
             e.preventDefault();
+
+            $('#name, #connect').hide();
+
             conn = openConnection();
 
             conn.onmessage = function (e) {

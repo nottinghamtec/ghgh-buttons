@@ -55,7 +55,6 @@
 
     $(document).ready(function() {
         conn = openConnection();
-        $('#reset').prop('disabled', true)
 
         conn.onmessage = function(e) {
             var data = JSON.parse(e.data);
@@ -64,7 +63,6 @@
                 case 'cmd':
                     var val = data['value'];
                     $('#' + data['src']).removeClass().addClass(val);
-                    $('#reset').prop('disabled', false);
                     data['type'] = 'ack';
                     sendMessage(data['src'], 'ack', val);
                     break;
@@ -92,7 +90,6 @@
         $('#reset').on('click', function(e) {
             e.preventDefault();
             sendMessage("", "cmd", "reset");
-            $('#reset').prop('disabled', true)
         })
     });
 </script>
